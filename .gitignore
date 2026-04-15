@@ -1,1 +1,9 @@
-data/raw_data/
+# folder
+data/
+.vscode/
+.claude/
+
+# files
+/CLAUDE.md
+/INSTRUCTION.md
+/open_piano.ipynb
