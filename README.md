@@ -6,7 +6,7 @@ Deep learning on the [Lakh MIDI Dataset (LMD full)](https://colinraffel.com/proj
 | Task | Target | Best Result |
 | --- | --- | --- |
 | **Classification** | Key signature (10 major keys) | ~80% test accuracy (CNN + BiGRU) |
-| **Regression** | Initial BPM (tempo) | See regression notebooks |
+| **Regression** | Initial BPM (tempo) | MAE = 11.00 bpm (CNN + biGRU) |
 
 Training runs on **Google Colab** (NVIDIA A100 / L4).
 
