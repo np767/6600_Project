@@ -20,13 +20,7 @@ Training runs on **Google Colab** (NVIDIA A100 / L4).
 2. `scripts/data-processing/midi_to_spectrogram.ipynb` *(piano-roll path)* **or** `process_spects.ipynb` *(mel-spectrogram path)*
 3. Any notebook in `scripts/models/` — e.g. `DSAN_6600_Piano_Class_CNN_GRU.ipynb`
 
-**Want a quick visualization?** Run the standalone script:
-
-```bash
-cd scripts && python piano_spec_vis.py
-```
-
-This writes example piano-roll and spectrogram PNGs to `outputs/`.
+Example piano-roll and spectrogram PNGs
 
 <p align="center">
   <img src="outputs/piano_roll_example.png" alt="Piano roll example" width="49%" />
