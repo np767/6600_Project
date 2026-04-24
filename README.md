@@ -1,4 +1,5 @@
-# VERSION 0.2 DSAN 6600 Project — Music Information Retrieval
+# VERSION 0.2 
+# DSAN 6600 Project — Music Information Retrieval
 
 Deep learning on the [Lakh MIDI Dataset (LMD full)](https://colinraffel.com/projects/lmd/) (~174K MIDI files) to predict two musical attributes from a 15-second clip:
 
@@ -27,8 +28,10 @@ cd scripts && python piano_spec_vis.py
 
 This writes example piano-roll and spectrogram PNGs to `outputs/`.
 
-![Piano roll example](outputs/piano_roll_example.png)
-![Spectrogram example](outputs/spectrogram_example.png)
+<p align="center">
+  <img src="outputs/piano_roll_example.png" alt="Piano roll example" width="49%" />
+  <img src="outputs/spectrogram_example.png" alt="Spectrogram example" width="49%" />
+</p>
 
 ---
 
