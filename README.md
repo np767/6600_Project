@@ -1,4 +1,4 @@
-# DSAN 6600 Project — Music Information Retrieval
+# VERSION 0.2 DSAN 6600 Project — Music Information Retrieval
 
 Deep learning on the [Lakh MIDI Dataset (LMD full)](https://colinraffel.com/projects/lmd/) (~174K MIDI files) to predict two musical attributes from a 15-second clip:
 
