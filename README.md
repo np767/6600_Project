@@ -1,11 +1,36 @@
 # DSAN 6600 Project — Music Information Retrieval
 
-Deep learning on the **Lakh MIDI Dataset (LMD full)** (~174K MIDI files, [colinraffel.com/projects/lmd](https://colinraffel.com/projects/lmd/)) for two tasks:
+Deep learning on the [Lakh MIDI Dataset (LMD full)](https://colinraffel.com/projects/lmd/) (~174K MIDI files) to predict two musical attributes from a 15-second clip:
 
-- **Classification** — predict key signature (10 major keys) from piano-roll
-- **Regression** — predict initial BPM from piano-roll
+| Task | Target | Best Result |
+| --- | --- | --- |
+| **Classification** | Key signature (10 major keys) | ~80% test accuracy (CNN + BiGRU) |
+| **Regression** | Initial BPM (tempo) | See regression notebooks |
 
 Training runs on **Google Colab** (NVIDIA A100 / L4).
+
+---
+
+## Quickstart
+
+**Want to reproduce results?** Run the notebooks on Colab in this order:
+
+1. `scripts/data-processing/process_midi.ipynb` — build the metadata CSV
+2. `scripts/data-processing/midi_to_spectrogram.ipynb` *(piano-roll path)* **or** `process_spects.ipynb` *(mel-spectrogram path)*
+3. Any notebook in `scripts/models/` — e.g. `DSAN_6600_Piano_Class_CNN_GRU.ipynb`
+
+**Want a quick visualization?** Run the standalone script:
+
+```bash
+cd scripts && python piano_spec_vis.py
+```
+
+This writes example piano-roll and spectrogram PNGs to `outputs/`.
+
+![Piano roll example](outputs/piano_roll_example.png)
+![Spectrogram example](outputs/spectrogram_example.png)
+
+---
 
 ## Repository Layout
 
@@ -15,47 +40,58 @@ scripts/
     process_midi.ipynb          # Parse LMD → lmd_full_metadata.csv
     midi_to_spectrogram.ipynb   # MIDI → piano-roll .npz + TruncatedSVD
     process_spects.ipynb        # MIDI → mel-spectrogram .npy
-  models/
-    # Piano-roll input
-    DSAN_6600_Piano_Class_CNN.ipynb                # CNN key-signature classifier
-    DSAN_6600_Piano_Class_CNN_HP_Tuning.ipynb      # CNN classification HP search
-    DSAN_6600_Piano_Class_CNN_GRU.ipynb            # CNN+BiGRU key-signature classifier
-    DSAN_6600_Piano_Class_CNN_GRU_HP_Tuning.ipynb  # CNN+BiGRU classification HP search
-    DSAN_6600_Piano_Regr_CNN_HP_Tuning.ipynb       # CNN BPM regression HP search
-    DSAN_6600_Piano_Regr_CNN_GRU_HP_Tuning.ipynb   # CNN+BiGRU BPM regression HP search
-    # Mel-spectrogram input
-    DSAN_6600_Spect_Class_CNN.ipynb                # CNN key-signature classifier (spectrogram)
-    DSAN_6600_Spect_Class_CNN_HP_tuning.ipynb      # Spectrogram classification HP search
-    DSAN_6600_Spect_Regr_CNN.ipynb                 # CNN BPM regression (spectrogram)
+  models/                       # Training notebooks (see below)
+  piano_spec_vis.py             # Standalone visualization script
 data/
   processed_data/
-    lmd_full_metadata.csv       # only tracked data file
+    lmd_full_metadata.csv       # Only tracked data file (~155K rows)
+outputs/                        # Example visualizations
+references.bib                  # Report references
 ```
+
+### Model Notebooks
+
+Naming convention: `DSAN_6600_{Piano|Spect}_{Class|Regr}_{CNN|CNN_GRU}[_HP_Tuning].ipynb`
+
+| Input | Task | Notebooks |
+| --- | --- | --- |
+| Piano-roll | Classification | `CNN`, `CNN_HP_Tuning`, `CNN_GRU`, `CNN_GRU_HP_Tuning` |
+| Piano-roll | Regression | `CNN_HP_Tuning`, `CNN_GRU_HP_Tuning` |
+| Spectrogram | Classification | `CNN`, `CNN_HP_tuning` |
+| Spectrogram | Regression | `CNN` |
+
+---
 
 ## Data Pipeline
 
-1. **`process_midi.ipynb`** — walks `data/raw_data/lmd_full/`, extracts MIDI metadata with `pretty_midi`, writes `lmd_full_metadata.csv` (~155K rows). Read CSV with `parse_dates=False` (e.g. `3/4` parses as a date otherwise).
+1. **`process_midi.ipynb`** — walks `data/raw_data/lmd_full/`, extracts MIDI metadata with `pretty_midi`, writes `lmd_full_metadata.csv`.
+   > ⚠️ Read the CSV with `parse_dates=False` — otherwise time signatures like `3/4` get auto-parsed as dates.
 2. **`midi_to_spectrogram.ipynb`** — converts MIDIs to piano rolls at 31.25 fps, saves `(128, T)` uint8 `.npz`. Also fits `TruncatedSVD(32)` for reduced `(32, T)` rolls.
-3. **`process_spects.ipynb`** (alt) — synthesizes MIDI via FluidSynth (`piano.sf2` required), computes 128-bin mel spectrograms (16 kHz, 15 s).
+3. **`process_spects.ipynb`** *(alternative)* — synthesizes MIDI via FluidSynth (`piano.sf2` required), computes 128-bin mel spectrograms (16 kHz, 15 s).
 
 ## Input Representation
 
-Piano rolls as `(1, 128, 468)` float32 tensors — 128 pitch bins × 468 time frames (15 s × 31.25 fps). Loaded as uint8, normalized to `[0, 1]` via `/ 127.0`.
+- **Piano roll**: `(1, 128, 468)` float32 tensors — 128 pitch bins × 468 time frames (15 s × 31.25 fps). Stored as uint8, normalized at load time via `/ 127.0`.
+- **Mel spectrogram**: 128 bins over 15 s of FluidSynth-rendered audio at 16 kHz.
 
 ## Models
 
-- **`GeneralCNN`** — 4 Conv-BN-ReLU-Pool blocks (1→32→64→128→256) + 3-layer MLP. ~78% test accuracy.
-- **`HybridCNN`** — same CNN backbone + bidirectional GRU (hidden 512) + MLP. ~80% classification accuracy; also used for regression.
-- **`SpectrogramCNNDynamic`** — parameterized CNN (3–5 layers) + configurable MLP, used for BPM regression HP search.
+| Model | Description | Use |
+| --- | --- | --- |
+| **`GeneralCNN`** | 4× Conv-BN-ReLU-Pool blocks (1→32→64→128→256) + 3-layer MLP | Baseline classifier, ~78% accuracy |
+| **`HybridCNN`** | CNN backbone + bidirectional GRU (hidden 512) + MLP head | Best classifier (~80%); also used for regression |
+| **`SpectrogramCNNDynamic`** | Parameterized CNN (3–5 layers) + configurable MLP | BPM regression hyperparameter search |
 
 ## Training
 
 - PyTorch with `torch.amp` mixed precision
 - Splits: classification 70/15/15 stratified; regression 80/10/10
-- BPM targets z-score normalized with training-set stats (mean ≈ 114, std ≈ 33)
-- C major capped at 4500 samples; classes <1000 dropped → 10 classes, ~37K samples
+- BPM targets z-score normalized using **training-set stats only** (mean ≈ 114, std ≈ 33)
+- Class balancing: C major capped at 4500 samples; classes <1000 dropped → 10 classes, ~37K samples
 - Early stopping (patience 3–4); checkpoints saved to Google Drive
 
 ## Dependencies
 
 `pretty_midi`, `librosa`, `mir_eval`, `torch`, `torchvision`, `sklearn`, `joblib`, `tqdm`
+
+The spectrogram path additionally requires **FluidSynth** and a `piano.sf2` soundfont.
