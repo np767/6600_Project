@@ -75,9 +75,8 @@ Naming convention: `DSAN_6600_{Piano|Spect}_{Class|Regr}_{CNN|CNN_GRU}[_HP_Tunin
 
 | Model | Description | Use |
 | --- | --- | --- |
-| **`GeneralCNN`** | 4× Conv-BN-ReLU-Pool blocks (1→32→64→128→256) + 3-layer MLP | Baseline classifier, ~78% accuracy |
+| **`GeneralCNN`** | 4× Conv-BN-ReLU-Pool blocks (1→32→64→128→256) + 3-layer MLP | Baseline classifier (~78%); parameterized variant used for spectrogram regression HP search |
 | **`HybridCNN`** | CNN backbone + bidirectional GRU (hidden 512) + MLP head | Best classifier (~80%); also used for regression |
-| **`SpectrogramCNNDynamic`** | Parameterized CNN (3–5 layers) + configurable MLP | BPM regression hyperparameter search |
 
 ## Training
 
@@ -85,7 +84,7 @@ Naming convention: `DSAN_6600_{Piano|Spect}_{Class|Regr}_{CNN|CNN_GRU}[_HP_Tunin
 - Data Splits(Train, Val, Test): 70/15/15 or 80/10/10
 - BPM targets z-score normalized
 - Class balancing: C major capped at 4500 samples; classes <1000 dropped → 10 classes, ~37K samples
-- Early stopping (patience 3–4); checkpoints saved to Google Drive
+- Early stopping (patience 3–4); checkpoints saved
 
 ## Dependencies
 
