@@ -1,4 +1,3 @@
-# VERSION 0.4
 # DSAN 6600 Project — Music Information Retrieval
 
 Deep learning on the [Lakh MIDI Dataset (LMD full)](https://colinraffel.com/projects/lmd/) (~174K MIDI files) to predict two musical attributes from a 15-second clip:
@@ -64,7 +63,7 @@ Naming convention: `DSAN_6600_{Piano|Spect}_{Class|Regr}_{CNN|CNN_GRU}[_HP_Tunin
 1. **`process_midi.ipynb`** — walks `data/raw_data/lmd_full/`, extracts MIDI metadata with `pretty_midi`, writes `lmd_full_metadata.csv`.
    > ⚠️ Read the CSV with `parse_dates=False` — otherwise time signatures like `3/4` get auto-parsed as dates.
 2. **`midi_to_spectrogram.ipynb`** — converts MIDIs to piano rolls at 31.25 fps, saves `(128, T)` uint8 `.npz`. Also fits `TruncatedSVD(32)` for reduced `(32, T)` rolls.
-3. **`process_spects.ipynb`** *(alternative)* — synthesizes MIDI via FluidSynth (`piano.sf2` required), computes 128-bin mel spectrograms (16 kHz, 15 s).
+3. **`process_spects.ipynb`** — synthesizes MIDI via FluidSynth (`piano.sf2` required), computes 128-bin mel spectrograms (16 kHz, 15 s).
 
 ## Input Representation
 
